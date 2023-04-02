@@ -1,56 +1,44 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs";
 
 function buildVitestArgs(...args: string[]) {
-  return ["vitest", "run", "-t", ...args];
+  const [path, ...rest] = args;
+  return ["vitest", "run", "--dir", path, "-t", ...rest];
 }
 
 function buildCdArgs(path: string) {
   return ["cd", path];
 }
 
-export function findWorkspaceRoot(filename: string) {
-  const workspaceFolders = vscode.workspace.workspaceFolders;
-  if (!workspaceFolders) {
-    return;
-  }
-  const workspaceFolder = workspaceFolders.find(folder =>
-    filename.startsWith(folder.uri.fsPath)
-  );
-  if (!workspaceFolder) {
-    return;
-  }
-  return workspaceFolder.uri.fsPath;
-}
-
 export function findProjectRoot(filename: string) {
-  const workspaceRoot = findWorkspaceRoot(filename);
-  if (!workspaceRoot) {
-    return;
+  let packageJsonPath: string | undefined;
+  let dir = path.dirname(filename);
+  while (dir !== path.dirname(dir)) {
+    const testPath = path.join(dir, "package.json");
+    if (fs.existsSync(testPath)) {
+      packageJsonPath = testPath;
+      break;
+    }
+    dir = path.dirname(dir);
   }
-  const gitRoot = vscode.workspace
-    .getConfiguration("git", vscode.Uri.file(workspaceRoot))
-    .get<string | undefined>("path");
-  if (!gitRoot) {
-    return;
-  }
-  return path.join(workspaceRoot, gitRoot);
+  if (!packageJsonPath) throw new Error("Could not find package.json!");
+  return path.dirname(packageJsonPath);
 }
 
-export function findFilePathRelativeToRoot(
+export function getFilePathRelativeToRoot(
   projectRootPath: string,
   filename: string
 ) {
   if (!projectRootPath) {
     return path.dirname(filename);
   }
-  return path.relative(projectRootPath, filename);
+  return path.dirname(path.relative(projectRootPath, filename));
 }
 
 export function getRootAndCasePath(filename: string) {
-  const casePath = path.dirname(filename);
-  const projectRootPath = findProjectRoot(filename) ?? casePath;
-  const casePathRelativeToRoot = findFilePathRelativeToRoot(
+  const projectRootPath = findProjectRoot(filename);
+  const casePathRelativeToRoot = getFilePathRelativeToRoot(
     projectRootPath,
     filename
   );
@@ -65,14 +53,13 @@ export function runInTerminal(text: string, filename: string) {
     getRootAndCasePath(filename);
   const terminal = vscode.window.createTerminal(`vitest - ${text}`);
 
-  const casePathStr = JSON.stringify(casePathRelativeToRoot);
   const caseNameStr = JSON.stringify(text);
 
   const cdArgs = buildCdArgs(projectRootPath);
   terminal.sendText(cdArgs.join(" "), true);
 
-  const vitestArgs = buildVitestArgs(casePathStr, caseNameStr);
-  const runnerArgs = ["pnpx", ...vitestArgs];
+  const vitestArgs = buildVitestArgs(casePathRelativeToRoot, caseNameStr);
+  const runnerArgs = ["pnpm", ...vitestArgs];
   terminal.sendText(runnerArgs.join(" "), true);
   terminal.show();
 }
@@ -87,7 +74,7 @@ function buildDebugConfig(
     request: "launch",
     runtimeArgs: buildVitestArgs(casePath, text),
     cwd,
-    runtimeExecutable: "pnpx",
+    runtimeExecutable: "pnpm",
     skipFiles: ["<node_internals>/**"],
     type: "pwa-node",
     console: "integratedTerminal",

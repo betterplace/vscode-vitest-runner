@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "icon": "logo.png",
   "license": "MIT",
-  "description": "Vitest case runner.",
-  "publisher": "kingwl",
+  "description": "Vitest case runner. Forked from vscode-vitest-runner by kingwl.",
+  "publisher": "betterplace",
   "engines": {
     "vscode": "^1.65.0"
   },
@@ -19,8 +19,8 @@
     "runner",
     "codelens"
   ],
-  "repository": "git@github.com:kwai-explore/vscode-vitest-runner.git",
-  "author": "kingwl <kingwenlu@gmail.com>",
+  "repository": "git@github.com:betterplace/vscode-vitest-runner.git",
+  "author": "betterplace developers <developers@betterplace.org>",
   "activationEvents": [
     "onLanguage:typescript",
     "onLanguage:javascript",
