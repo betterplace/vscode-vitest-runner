@@ -1,6 +1,6 @@
 {
   "name": "betterplace-vscode-vitest-runner",
-  "displayName": "Vitest Runner",
+  "displayName": "Betterplace Vitest Runner",
   "version": "0.0.1",
   "main": "dist/index.js",
   "icon": "logo.png",
