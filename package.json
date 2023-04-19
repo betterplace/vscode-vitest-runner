@@ -27,6 +27,24 @@
     "onLanguage:typescriptreact",
     "onLanguage:javascriptreact"
   ],
+  "contributes": {
+    "configuration": {
+      "title": "vscode-vitest-runner",
+      "properties": {
+        "vscode-vitest-runner.executable": {
+          "type": "string",
+          "default": "pnpm",
+          "description": "The default executable to run vitest, e.g. `pnpm` or `yarn`"
+        },
+        "vscode-vitest-runner.args": {
+          "type": "string",
+          "default": "vitest run",
+          "description": "The default command to run vitest, e.g. `vitest run` or `test` (for `yarn test`)"
+        }
+
+      }
+    }
+  },
   "devDependencies": {
     "@types/node": "^16.0.0",
     "@types/vscode": "^1.65.0",

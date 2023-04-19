@@ -51,15 +51,22 @@ export function getRootAndCasePath(filename: string) {
 export function runInTerminal(text: string, filename: string) {
   const { projectRootPath, casePathRelativeToRoot } =
     getRootAndCasePath(filename);
-  const terminal = vscode.window.createTerminal(`vitest - ${text}`);
+  const localFilename = path.basename(filename)
+  let terminal = vscode.window.terminals.find(it => it.name.startsWith(`vitest -`));
+  if (!terminal) {
+      terminal = vscode.window.createTerminal(`vitest - ${text}`);
+  }
 
   const caseNameStr = JSON.stringify(text);
+  const config = vscode.workspace.getConfiguration("vscode-vitest-runner");
+  const defaultExecutable = "npx";
+  const exec = config.get("executable") ?? defaultExecutable;
 
   const cdArgs = buildCdArgs(projectRootPath);
   terminal.sendText(cdArgs.join(" "), true);
 
-  const vitestArgs = buildVitestArgs(casePathRelativeToRoot, caseNameStr);
-  const runnerArgs = ["pnpm", ...vitestArgs];
+  const vitestArgs = buildVitestArgs(casePathRelativeToRoot, localFilename, caseNameStr);
+  const runnerArgs = [exec, ...vitestArgs];
   terminal.sendText(runnerArgs.join(" "), true);
   terminal.show();
 }
@@ -67,14 +74,20 @@ export function runInTerminal(text: string, filename: string) {
 function buildDebugConfig(
   cwd: string,
   casePath: string,
+  localFilename: string,
   text: string
 ): vscode.DebugConfiguration {
+  const config = vscode.workspace.getConfiguration("vscode-vitest-runner");
+  const defaultExecutable = "npx";
+  const exec = config.get("executable") ?? defaultExecutable;
+  const runtimeArgs = buildVitestArgs(casePath, localFilename, text);
+
   return {
     name: "Debug vitest case",
     request: "launch",
-    runtimeArgs: buildVitestArgs(casePath, text),
+    runtimeArgs,
     cwd,
-    runtimeExecutable: "pnpm",
+    runtimeExecutable: exec,
     skipFiles: ["<node_internals>/**"],
     type: "pwa-node",
     console: "integratedTerminal",
@@ -85,9 +98,12 @@ function buildDebugConfig(
 export function debugInTermial(text: string, filename: string) {
   const { projectRootPath, casePathRelativeToRoot } =
     getRootAndCasePath(filename);
+    const localFilename = path.basename(filename)
+
   const config = buildDebugConfig(
     projectRootPath,
     casePathRelativeToRoot,
+    localFilename,
     text
   );
   vscode.debug.startDebugging(undefined, config);
