@@ -41,5 +41,17 @@
     "package": "pnpm build && pnpm vsce package",
     "format:check": "prettier --config ./prettier.config.json --c ./src/**/*.ts",
     "format:write": "pnpm format:check --write"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "Betterplace Vitest Runner",
+      "properties": {
+        "VitestRunner.executionArg": {
+          "type": "string",
+          "default": "pnpm",
+          "description": "The runner of the extension. You can replace it with \"docker exec -it <your-container-name> npx\" to execute vitest inside your dev container"
+        }
+      }
+    }
   }
 }

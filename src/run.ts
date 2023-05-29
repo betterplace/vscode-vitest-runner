@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { TERMINAL } from './enums';
 
 function buildVitestArgs(...args: string[]) {
     const [path, ...rest] = args;
@@ -9,6 +10,23 @@ function buildVitestArgs(...args: string[]) {
 
 function buildCdArgs(path: string) {
     return ['cd', path];
+}
+
+function getExecutionArg() {
+    const config = vscode.workspace.getConfiguration('VitestRunner');
+    return config.get<string>('executionArg');
+}
+
+function getVitestTerminalOrNew() {
+    const vitestTerminal = vscode.window.terminals.find(
+        terminal => terminal.name === TERMINAL.Name
+    );
+
+    if (vitestTerminal) {
+        return vitestTerminal;
+    }
+
+    return vscode.window.createTerminal(TERMINAL.Name);
 }
 
 export function findProjectRoot(filename: string) {
@@ -51,7 +69,8 @@ export function getRootAndCasePath(filename: string) {
 export function runInTerminal(text: string, filename: string) {
     const { projectRootPath, casePathRelativeToRoot } =
         getRootAndCasePath(filename);
-    const terminal = vscode.window.createTerminal(`vitest - ${text}`);
+
+    const terminal = getVitestTerminalOrNew();
 
     const caseNameStr = JSON.stringify(text);
 
@@ -59,7 +78,9 @@ export function runInTerminal(text: string, filename: string) {
     terminal.sendText(cdArgs.join(' '), true);
 
     const vitestArgs = buildVitestArgs(casePathRelativeToRoot, caseNameStr);
-    const runnerArgs = ['pnpm', ...vitestArgs];
+    const executionArg = getExecutionArg();
+
+    const runnerArgs = [executionArg, ...vitestArgs];
     terminal.sendText(runnerArgs.join(' '), true);
     terminal.show();
 }
@@ -74,7 +95,7 @@ function buildDebugConfig(
         request: 'launch',
         runtimeArgs: buildVitestArgs(casePath, text),
         cwd,
-        runtimeExecutable: 'pnpm',
+        runtimeExecutable: getExecutionArg(),
         skipFiles: ['<node_internals>/**'],
         type: 'pwa-node',
         console: 'integratedTerminal',
