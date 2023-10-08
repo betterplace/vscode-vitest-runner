@@ -66,6 +66,10 @@ export function getRootAndCasePath(filename: string) {
     };
 }
 
+export function escapePath(path: string) {
+    return path.replace(/[*+?^${}()[\]\s\\]/g, '\\$&');
+}
+
 export function runInTerminal(text: string, filename: string) {
     const { projectRootPath, casePathRelativeToRoot } =
         getRootAndCasePath(filename);
@@ -77,7 +81,10 @@ export function runInTerminal(text: string, filename: string) {
     const cdArgs = buildCdArgs(projectRootPath);
     terminal.sendText(cdArgs.join(' '), true);
 
-    const vitestArgs = buildVitestArgs(casePathRelativeToRoot, caseNameStr);
+    const vitestArgs = buildVitestArgs(
+        escapePath(casePathRelativeToRoot),
+        caseNameStr
+    );
     const executionArg = getExecutionArg();
 
     const runnerArgs = [executionArg, ...vitestArgs];
@@ -103,7 +110,7 @@ function buildDebugConfig(
     };
 }
 
-export function debugInTermial(text: string, filename: string) {
+export function debugInTerminal(text: string, filename: string) {
     const { projectRootPath, casePathRelativeToRoot } =
         getRootAndCasePath(filename);
     const config = buildDebugConfig(
