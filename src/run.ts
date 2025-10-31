@@ -5,7 +5,7 @@ import { TERMINAL } from './enums';
 
 function buildVitestArgs(...args: string[]) {
     const [path, ...rest] = args;
-    return ['vitest', 'run', '--dir', path, '-t', ...rest];
+    return ['vitest', 'run', path, '-t', ...rest];
 }
 
 function buildCdArgs(path: string) {
@@ -49,9 +49,9 @@ export function getFilePathRelativeToRoot(
     filename: string
 ) {
     if (!projectRootPath) {
-        return path.dirname(filename);
+        return filename;
     }
-    return path.dirname(path.relative(projectRootPath, filename));
+    return path.relative(projectRootPath, filename);
 }
 
 export function getRootAndCasePath(filename: string) {

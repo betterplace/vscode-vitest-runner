@@ -109,3 +109,4 @@ yarn.lock
 
 .DS_Store
 .history
+**/mise-tools/*

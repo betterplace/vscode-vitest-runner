@@ -1,7 +1,7 @@
 {
   "name": "betterplace-vscode-vitest-runner",
   "displayName": "Betterplace Vitest Runner",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/index.js",
   "icon": "logo.png",
   "license": "MIT",
@@ -28,7 +28,7 @@
     "onLanguage:javascriptreact"
   ],
   "devDependencies": {
-    "@types/node": "^16.0.0",
+    "@types/node": "^22.0.0",
     "@types/vscode": "^1.65.0",
     "@vscode/vsce": "^2.18.0",
     "esbuild": "^0.14.27",
